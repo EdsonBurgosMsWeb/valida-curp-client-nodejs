@@ -1,0 +1,45 @@
+{
+  "name": "multiserviciosweb",
+  "version": "1.1.0",
+  "description": "Validate, calculate and obtain CURP information in México.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node example.js",
+    "start": "node example.js",
+    "prepublishOnly": "npm run test",
+    "preversion": "npm run test",
+    "postversion": "git push && git push --tags && npm publish"
+  },
+  "keywords": [
+    "valida",
+    "curp",
+    "méxico",
+    "client",
+    "api",
+    "renapo",
+    "validation"
+  ],
+  "author": "Edson Burgos <edsonburgosmacedo@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://valida-curp.com.mx/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EdsonBurgosMsWeb/valida-curp-client-nodejs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/EdsonBurgosMsWeb/valida-curp-client-nodejs/issues"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "MultiServiciosWeb/",
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ]
+}
