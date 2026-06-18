@@ -4,242 +4,253 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/license/MIT)
 [![Node.js version](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://nodejs.org/)
 
-Node.js client for validating, calculating, and obtaining CURP (Clave Única de Registro de Población) information in México. This library provides a simple interface to interact with the Valida CURP API service.
+Node.js client for validating, calculating, and obtaining CURP (Clave Única de Registro de Población) information in México.
 
-## Features
+- Copyright (c) Multiservicios Web JCA S.A. de C.V., https://multiservicios-web.com.mx
+- More information: https://valida-curp.com.mx
+- License: MIT (https://opensource.org/license/MIT)
 
-- ✅ Validate CURP structure
-- 🔍 Retrieve CURP data from RENAPO
-- 🧮 Calculate CURP from personal data
-- 🗺️ Get list of Mexican entities (states)
-- 🔄 Support for both v1 and v2 API versions
-- 🔐 Secure token-based authentication
-
-## Requirements
+## 1. Requirements
 
 - Node.js >= 14.0.0
-- API token from [valida-curp.com.mx](https://valida-curp.com.mx/)
 
-## Installation
-
-Install the package using npm:
+## 2. Installation
 
 ```bash
 npm install multiserviciosweb
 ```
 
-## Account Setup
+## 3. Account
 
-### 1. Create an account
-Register at: [https://valida-curp.tawk.help/article/registro-de-usuario](https://valida-curp.tawk.help/article/registro-de-usuario)
+### 3.1. Create an account
+Create an account by following this link: https://valida-curp.tawk.help/article/registro-de-usuario
 
-### 2. Create a project
-Create a project at: [https://valida-curp.tawk.help/article/creaci%C3%B3n-de-proyecto](https://valida-curp.tawk.help/article/creaci%C3%B3n-de-proyecto)
+### 3.2. Create a project
+Create a project by following this link: https://valida-curp.tawk.help/article/creaci%C3%B3n-de-proyecto
 
-### 3. Get your API token
-Obtain your token at: [https://valida-curp.tawk.help/article/obtener-token-llave-privada-proyecto](https://valida-curp.tawk.help/article/obtener-token-llave-privada-proyecto)
+### 3.3. Get a token
+Get your token by following this link: https://valida-curp.tawk.help/article/obtener-token-llave-privada-proyecto
 
-## Configuration
+## 4. Usage
 
-Add your token to a `.env` file in your project root:
-
-```env
-TOKEN_VALIDA_API_CURP=your_api_token_here
-```
-
-## Usage
-
-### Importing the Client
+### 4.1. Import the library
 
 ```javascript
 const { ValidaCurp, ValidaCurpException } = require('multiserviciosweb');
 ```
 
-### Creating an Instance
+### 4.2. Create an instance
+
+The constructor receives the token as first parameter. Optionally you can pass a custom endpoint.
 
 ```javascript
-// Using token from .env file
+// Passing token directly
+const client = new ValidaCurp('YOUR-TOKEN');
+```
+
+You can also set the token via environment variable. Create a `.env` file:
+
+```env
+TOKEN_VALIDA_API_CURP=YOUR-TOKEN
+```
+
+Then instantiate without arguments:
+
+```javascript
 const client = new ValidaCurp();
-
-// Or explicitly passing token
-const clientWithToken = new ValidaCurp('your_api_token_here');
 ```
 
-### Setting API Version
+### 4.3. (Optional) Set API version
+
+You can set the API version to query. Default value is 2.
 
 ```javascript
-// Set API version (1 or 2, default is 2)
-client.setVersion(2);
+client.setVersion(2); // 1 or 2
 ```
 
-## API Methods
+> Version 1 of the API is deprecated. Please use version 2.
 
-### 1. Validate CURP Structure
-
-Validates the structure of a CURP.
+### 4.4. (Optional) Custom endpoint
 
 ```javascript
-async function validateCURP() {
-    try {
-        const result = await client.isValid('XXXX980528XXXXXX02');
-        console.log('Validation Result:', result);
-    } catch (error) {
-        console.error('Validation Error:', error.message);
+const client = new ValidaCurp('YOUR-TOKEN', 'https://custom.valida-curp.com.mx/curp/');
+```
+
+## 5. Methods
+
+### 5.1. Validate CURP
+
+The method `isValid()` takes a CURP as parameter and validates its structure.
+
+```javascript
+const result = await client.isValid('PXNE660720HMCXTN06');
+console.log(result);
+```
+
+Response:
+
+```json
+{
+  "valido": 1
+}
+```
+
+### 5.2. Get CURP data
+
+The method `getData()` takes a CURP as parameter and consults the CURP information in RENAPO.
+
+```javascript
+const data = await client.getData('PXNE660720HMCXTN06');
+console.log(data);
+```
+
+Response:
+
+```json
+{
+  "Applicant": {
+    "CURP": "PXNE660720HMCXTN06",
+    "Names": "ENRIQUE",
+    "LastName": "PEÑA",
+    "SecondLastName": "NIETO",
+    "GenderKey": "H",
+    "Gender": "Hombre",
+    "DateOfBirth": "1966-07-20",
+    "Nacionality": "MEX",
+    "CodeEntityBirth": "",
+    "EntityBirth": "",
+    "KeyEvidentiaryDocument": 1,
+    "EvidentiaryDocument": "Acta de nacimiento",
+    "CurpStatusKey": "AN",
+    "CurpStatus": "Alta Normal"
+  },
+  "EvidentiaryDocument": {
+    "YearRegistration": 1966,
+    "KeyIssuingEntity": "",
+    "KeyMunicipalityRegistration": 14,
+    "MunicipalityRegistration": "",
+    "Foja": 0,
+    "FolioLetter": "",
+    "Book": 0,
+    "CertificateNumber": 985,
+    "RegistrantNumber": 15,
+    "RegistrationEntity": "México",
+    "ForeignRegistrationNumber": "",
+    "Volume": 0
+  }
+}
+```
+
+### 5.3. Calculate a CURP
+
+The method `calculate()` takes an object as parameter and calculates the CURP structure from the provided data.
+
+```javascript
+const result = await client.calculate({
+    names: 'Enrique',
+    lastName: 'Peña',
+    secondLastName: 'Nieto',
+    birthDay: '20',
+    birthMonth: '07',
+    birthYear: '1966',
+    gender: 'H',
+    entity: '15',
+});
+console.log(result);
+```
+
+**Required fields:**
+
+| Field            | Description                             | Example  |
+|------------------|-----------------------------------------|----------|
+| `names`          | First name(s)                           | `'Juan'` |
+| `lastName`       | Paternal last name                      | `'Pérez'`|
+| `secondLastName` | Maternal last name                      | `'López'`|
+| `birthDay`       | Day of birth (2 digits)                 | `'15'`   |
+| `birthMonth`     | Month of birth (2 digits)               | `'09'`   |
+| `birthYear`      | Year of birth (4 digits)                | `'1990'` |
+| `gender`         | `'H'` for male, `'M'` for female        | `'H'`    |
+| `entity`         | Entity code (2-digit state code)        | `'09'`   |
+
+Response:
+
+```json
+{
+  "curp": "PXNE660720HMCXTN06"
+}
+```
+
+### 5.4. Get entities
+
+The method `getEntities()` doesn't take any parameters and returns the list of entities.
+
+```javascript
+const entities = await client.getEntities();
+console.log(entities);
+```
+
+Response:
+
+```json
+{
+  "clave_entidad": [
+    { "clave_entidad": "01", "nombre_entidad": "AGUASCALIENTES", "abreviatura_entidad": "AS" },
+    { "clave_entidad": "02", "nombre_entidad": "BAJA CALIFORNIA", "abreviatura_entidad": "BC" }
+  ]
+}
+```
+
+## 6. Error handling
+
+All methods throw `ValidaCurpException` on API errors.
+
+```javascript
+const { ValidaCurp, ValidaCurpException } = require('multiserviciosweb');
+
+try {
+    const result = await client.getData('PXNE660720HMCXTN06');
+} catch (error) {
+    if (error instanceof ValidaCurpException) {
+        console.error('API Error:', error.message);
+    } else {
+        console.error('Unexpected Error:', error.message);
     }
 }
 ```
 
-**Response Example:**
-```json
-{
-  "valid": true,
-  "curp": "XXXX980528XXXXXX02",
-  "details": "Valid CURP structure"
-}
-```
-
-### 2. Get CURP Data
-
-Retrieves CURP information from RENAPO.
-
-```javascript
-async function getCURPData() {
-    try {
-        const data = await client.getData('XXXX980528XXXXXX02');
-        console.log('CURP Data:', data);
-    } catch (error) {
-        console.error('Data Retrieval Error:', error.message);
-    }
-}
-```
-
-**Response Example:**
-```json
-{
-  "nombres": "EDSON EDIAN",
-  "apellidoPaterno": "BURGOS",
-  "apellidoMaterno": "MACEDO",
-  "sexo": "H",
-  "fechaNacimiento": "1998-05-28",
-  "entidadNacimiento": "CIUDAD DE MÉXICO",
-  "nacionalidad": "MEXICANA"
-}
-```
-
-### 3. Calculate CURP
-
-Calculates a CURP from personal data.
-
-```javascript
-async function calculateCURP() {
-    const personData = {
-        names: 'Edson Edian',
-        lastName: 'Burgos',
-        secondLastName: 'Macedo',
-        birthDay: '28',
-        birthMonth: '05',
-        birthYear: '1998',
-        gender: 'H',  // H = Hombre, M = Mujer
-        entity: '15'  // Estado de México
-    };
-
-    try {
-        const result = await client.calculate(personData);
-        console.log('Calculated CURP:', result);
-    } catch (error) {
-        console.error('Calculation Error:', error.message);
-    }
-}
-```
-
-**Response Example:**
-```json
-{
-  "curp": "XXXX980528XXXXXX02",
-  "digitoVerificador": "2"
-}
-```
-
-### 4. Get Mexican Entities
-
-Retrieves a list of Mexican entities (states).
-
-```javascript
-async function getEntities() {
-    try {
-        const entities = await client.getEntities();
-        console.log('Mexican Entities:', entities);
-    } catch (error) {
-        console.error('Entities Retrieval Error:', error.message);
-    }
-}
-```
-
-**Response Example:**
-```json
-{
-  "01": "AGUASCALIENTES",
-  "02": "BAJA CALIFORNIA",
-  "03": "BAJA CALIFORNIA SUR",
-  "04": "CAMPECHE",
-  "05": "COAHUILA",
-  ...
-}
-```
-
-## Full Example
+## 7. Full example
 
 ```javascript
 const { ValidaCurp, ValidaCurpException } = require('multiserviciosweb');
 
 async function main() {
     try {
-        // Initialize client
-        const client = new ValidaCurp();
-        
-        // Set API version to 2 (recommended)
-        client.setVersion(2);
-        
-        console.log("=== ValidaCurp Node.js Client Example ===");
-        
-        // 1. Validate CURP
-        console.log("\n1. Validating CURP...");
-        const validation = await client.isValid('XXXX980528XXXXXX02');
-        console.log('Validation Result:', validation);
-        
-        // 2. Get CURP data
-        console.log("\n2. Retrieving CURP data...");
-        const data = await client.getData('XXXX980528XXXXXX02');
-        console.log('CURP Data:', data);
-        
-        // 3. Calculate CURP
-        console.log("\n3. Calculating CURP...");
-        const personData = {
-            names: 'Edson Edian',
-            lastName: 'Burgos',
-            secondLastName: 'Macedo',
-            birthDay: '28',
-            birthMonth: '05',
-            birthYear: '1998',
+        const client = new ValidaCurp('YOUR-TOKEN');
+
+        // Validate CURP structure
+        console.log(await client.isValid('PXNE660720HMCXTN06'));
+
+        // Get CURP data from RENAPO
+        console.log(await client.getData('PXNE660720HMCXTN06'));
+
+        // Calculate CURP
+        console.log(await client.calculate({
+            names: 'Enrique',
+            lastName: 'Peña',
+            secondLastName: 'Nieto',
+            birthDay: '20',
+            birthMonth: '07',
+            birthYear: '1966',
             gender: 'H',
-            entity: '15'
-        };
-        const calculated = await client.calculate(personData);
-        console.log('Calculated CURP:', calculated);
-        
-        // 4. Get entities
-        console.log("\n4. Retrieving entities...");
-        const entities = await client.getEntities();
-        console.log('Entities Count:', Object.keys(entities).length);
-        
-        // 5. API version info
-        console.log("\n5. API Information:");
-        console.log('Current Version:', client.getVersion());
-        console.log('Current Endpoint:', client.getEndpoint());
-        
+            entity: '15',
+        }));
+
+        // Get entities
+        console.log(await client.getEntities());
+
     } catch (error) {
         if (error instanceof ValidaCurpException) {
-            console.error('API Error:', error.message);
+            console.error('ValidaCurp Exception:', error.message);
         } else {
             console.error('Unexpected Error:', error.message);
         }
@@ -249,58 +260,13 @@ async function main() {
 main();
 ```
 
-## Personal Data Structure for CURP Calculation
+To see the full example click on this link: https://github.com/EdsonBurgosMsWeb/valida-curp-client-nodejs/blob/main/example.js
 
-| Property         | Description                                                                 | Example       |
-|------------------|-----------------------------------------------------------------------------|---------------|
-| `names`          | First name(s)                                                               | 'Juan Carlos' |
-| `lastName`       | Paternal last name                                                          | 'Pérez'       |
-| `secondLastName` | Maternal last name                                                          | 'López'       |
-| `birthDay`       | Day of birth (2 digits)                                                     | '15'          |
-| `birthMonth`     | Month of birth (2 digits)                                                   | '09'          |
-| `birthYear`      | Year of birth (4 digits)                                                    | '1990'        |
-| `gender`         | Gender: 'H' for male, 'M' for female                                        | 'H'           |
-| `entity`         | Entity code (2-digit code for Mexican state)                                | '09' (CDMX)   |
+## 8. Credits
 
-## Error Handling
-
-Handle API errors using try/catch blocks:
-
-```javascript
-try {
-    const result = await client.getData('INVALID_CURP');
-} catch (error) {
-    if (error instanceof ValidaCurpException) {
-        // Handle API-specific errors
-        console.error('API Error:', error.message);
-    } else {
-        // Handle other errors (network issues, etc.)
-        console.error('Unexpected Error:', error.message);
-    }
-}
-```
-
-## API Version Information
-- **v1**: Deprecated (default endpoint: `https://api.valida-curp.com.mx/curp/`)
-- **v2**: Current version (default endpoint: `https://version.valida-curp.com.mx/api/v2/curp/`)
-
-## Contributing
-Contributions are welcome! Please open an issue or submit a pull request on GitHub.
-
-GitHub Repository:  
-[https://github.com/EdsonBurgosMsWeb/valida-curp-client-nodejs](https://github.com/EdsonBurgosMsWeb/valida-curp-client-nodejs)
-
-## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Credits
-- Copyright (c) **Multiservicios Web JCA S.A. de C.V.**, [https://multiservicios-web.com.mx](https://multiservicios-web.com.mx)
+- Copyright (c) **Multiservicios Web JCA S.A. de C.V.**, https://multiservicios-web.com.mx
 - **Author:** Edson Burgos <edsonburgosmacedo@gmail.com>
-- **Node.js Port:** Assistant
 
-## Support
-For support, please visit: [https://valida-curp.com.mx](https://valida-curp.com.mx)
+## 9. License
 
----
-
-**Disclaimer**: This library is not affiliated with or endorsed by the Mexican government. CURP validation and data retrieval services are provided through third-party API services.
+This project is released under the MIT License. See the **[LICENSE](./LICENSE)** file for details.

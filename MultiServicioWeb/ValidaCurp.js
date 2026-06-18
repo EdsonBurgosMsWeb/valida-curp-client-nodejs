@@ -6,8 +6,7 @@
  * Copyright (c) Multiservicios Web JCA S.A. de C.V., https://multiservicios-web.com.mx
  * License: MIT (https://opensource.org/license/MIT)
  *
- * Author: Edson Burgos <edsonburgosmacedo@gmail.com.mx>
- * Ported to Node.js by: Assistant
+ * Author: Edson Burgos <edsonburgosmacedo@gmail.com>
  */
 
 const axios = require('axios');
@@ -23,7 +22,7 @@ class ValidaCurpException extends Error {
 class ValidaCurp {
     static URL_V1 = "https://api.valida-curp.com.mx/curp/";
     static URL_V2 = "https://version.valida-curp.com.mx/api/v2/curp/";
-    static LIBRARY_VERSION = "1.0.0";
+    static LIBRARY_VERSION = "1.1.0";
     static TYPE = "nodejs";
 
     /**
@@ -248,6 +247,7 @@ class ValidaCurp {
         dataV2.birthday = dataV2.birthDay;
         dataV2.yearBirth = dataV2.birthYear;
         delete dataV2.birthDay;
+        delete dataV2.birthYear;
 
         const response = await this._makeRequest("calculateCURP", null, dataV2);
         return this._decodeResponse(response);
